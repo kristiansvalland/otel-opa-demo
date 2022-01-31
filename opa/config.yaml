@@ -1,0 +1,10 @@
+labels: 
+  app: demo-app
+  region: earth
+  environment: development
+
+distributed_tracing:
+  type: grpc
+  address: "${OTEL_GRPC_ENDPOINT}"
+  # service_name: opa
+  # sample_percentage: 100

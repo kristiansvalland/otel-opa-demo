@@ -1,0 +1,41 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: "opa-metrics"
+          scrape_interval: 5s
+          metrics_path: "/metrics"
+          static_configs:
+            - targets: ["opa:8181"]
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      mylabel: custom-value
+  logging:
+
+  jaeger:
+    endpoint: jaeger-all-in-one:14250
+    insecure: true
+
+processors:
+  batch:
+
+extensions:
+  health_check:
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, jaeger]
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [batch]
+      exporters: [logging, prometheus]
