@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -33,10 +32,15 @@ var users map[int]User = map[int]User{
 	1: {Username: "alice", Roles: []string{"admin"}, UserID: 1},
 	2: {Username: "bob", Roles: []string{"user"}, UserID: 2},
 	3: {Username: "mallory", Roles: []string{"user"}, UserID: 3},
+	4: {Username: "unknown", Roles: []string{"user"}, UserID: 4},
 }
 
+var c int = 0
+
 func getRandomUser() *User {
-	id := rand.Intn(4) + 1
+	id := c%5 + 1
+	c++
+	// id := rand.Intn(4) + 1
 	if user, ok := users[id]; ok {
 		return &user
 	}
@@ -87,9 +91,6 @@ func (client *Client) doRequest(ctx context.Context) {
 	request = request.WithContext(spanctx)
 
 	hc := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
-	_span := trace.SpanFromContext(request.Context())
-	log.Print("Traceid: ", span.SpanContext().TraceID(), "SpanId: ", span.SpanContext().SpanID())
-	log.Print("Traceid: ", _span.SpanContext().TraceID(), "SpanId: ", _span.SpanContext().SpanID())
 	resp, err := hc.Do(request)
 	if err != nil {
 		span.RecordError(err)

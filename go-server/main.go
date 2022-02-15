@@ -15,7 +15,7 @@ import (
 var tracer trace.Tracer
 
 const (
-	SERVICE_NAME = "test-service"
+	SERVICE_NAME = "go-server"
 )
 
 type App struct {

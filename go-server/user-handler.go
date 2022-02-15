@@ -22,6 +22,8 @@ func getUsername(ctx context.Context, idString string) (string, error) {
 	case "1":
 		user = "alice"
 	case "2":
+		user = "bob"
+	case "3":
 		user = "mallory"
 	default:
 		return "", errors.New("user not found")

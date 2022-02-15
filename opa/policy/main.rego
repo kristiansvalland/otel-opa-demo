@@ -55,6 +55,7 @@ request := {
 }
 
 blocked_response = response {
+	payload.username
 	response = http.send(request)
 }
 
@@ -78,6 +79,7 @@ reason["Failed to query for blocked user: got no body"] {
 }
 
 reason["unable to query blocked api"] {
+	not missing_auth
 	not blocked_response
 }
 
@@ -93,13 +95,21 @@ is_user_path {
 	"users" == path[0]
 }
 
+reason["missing auth"] {
+	missing_auth
+}
+
+missing_auth {
+	not decoded_token
+}
+
 path := split(trim_prefix(input.path, "/"), "/")
+
+# TODO: verify as well
+decoded_token = io.jwt.decode(input.jwt)
 
 header := decoded_token[0]
 
 payload := decoded_token[1]
 
 signature := decoded_token[2]
-
-# TODO: verify as well
-decoded_token = io.jwt.decode(input.jwt)
