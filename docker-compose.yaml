@@ -20,6 +20,7 @@ services:
       - "/etc/policy"
     depends_on:
     - otel-collector
+    - blocked-user-rs
 
   # Jaeger
   jaeger-all-in-one:
@@ -67,3 +68,13 @@ services:
     depends_on:
       - otel-collector
       - opa
+  blocked-user-rs:
+    build:
+      dockerfile: Dockerfile
+      context: ./blocked-user-rs
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=blocked-user-rs,service.namespace=kristiansvalland,service.version=0.1.0
+    depends_on:
+      - otel-collector
+    ports:
+      - "8088:8088"

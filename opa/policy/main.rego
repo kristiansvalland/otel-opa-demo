@@ -31,10 +31,6 @@ reason[r] {
 	r := sprintf("Method %s not allowed on resource %s", [input.method, input.path])
 }
 
-reason["user is blocked"] {
-	blocked
-}
-
 reason[r] {
 	not is_self_path
 	r := sprintf("Not self: requested %v, but user is %v", [path[1], payload.userid])
@@ -49,10 +45,44 @@ is_get {
 	input.method == "GET"
 }
 
+BLOCKED_API := "http://blocked-user-rs:8088/blocked"
+
+request := {
+	"url": BLOCKED_API,
+	"method": "POST",
+	"body": {"username": payload.username},
+	"headers": {"Content-Type": "application/json"},
+}
+
+blocked_response = response {
+	response = http.send(request)
+}
+
 default blocked = true
 
 blocked = false {
-	not blocked_users[payload.username]
+	blocked_response.status_code == 200
+	body = blocked_response.body
+
+	body.result == false
+}
+
+reason[msg] {
+	blocked_response.status_code != 200
+	msg := sprintf("Failed to query for blocked user: POST %s failed with status_code=%v", [BLOCKED_API, blocked_response.status_code])
+}
+
+reason["Failed to query for blocked user: got no body"] {
+	blocked_response.status_code == 200
+	not blocked_response.body
+}
+
+reason["unable to query blocked api"] {
+	not blocked_response
+}
+
+reason["user is blocked"] {
+	blocked_response.body.result
 }
 
 is_admin {
